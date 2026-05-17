@@ -1,8 +1,9 @@
 langchain
 langgraph
-langchain-openai
-langchain-groq
 langchain-community
+huggingface_hub
 streamlit
 python-dotenv
 tavily-python
+pymongo[srv]
+certifi

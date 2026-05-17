@@ -1,6 +1,6 @@
 # Agentic AI Research Assistant
 
-A Streamlit research app built with LangGraph, Groq-hosted language models, and Tavily web search. A user submits a topic, the workflow creates a research plan, gathers web context, summarizes the findings, and produces a final report in separate UI tabs.
+A Streamlit research app built with LangGraph, a Hugging Face-hosted language model, and Tavily web search. A user submits a topic, the workflow creates a research plan, gathers web context, summarizes the findings, and produces a final report in separate UI tabs.
 
 ## What It Does
 
@@ -41,7 +41,7 @@ LangGraph is compiled with an in-memory checkpointer, and the Streamlit app pass
 - Streamlit
 - LangGraph
 - LangChain
-- `langchain-groq`
+- `huggingface_hub`
 - Tavily Search API
 - `python-dotenv`
 
@@ -67,7 +67,7 @@ LangGraph is compiled with an in-memory checkpointer, and the Streamlit app pass
 ## Requirements
 
 - Python 3.10+ recommended
-- A Groq API key
+- A Hugging Face token with access to the selected model
 - A Tavily API key for live web research
 
 ## Setup
@@ -81,12 +81,17 @@ pip install -r requirements.txt
 2. Create or update `.env`:
 
 ```env
-GROQ_API_KEY=your_groq_api_key
-GROQ_MODEL=llama-3.3-70b-versatile
+HF_TOKEN=your_huggingface_token
+HF_MODEL_ID=meta-llama/Llama-3.2-1B-Instruct
+HF_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
 TAVILY_API_KEY=your_tavily_api_key
+MONGO_URI=your_mongodb_atlas_uri
+MONGO_DB_NAME=agentic_research
+MONGO_MEMORY_COLLECTION=chat_memories
+MONGO_VECTOR_INDEX=chat_query_vector_index
 ```
 
-`GROQ_MODEL` is optional. If omitted, the app defaults to `llama-3.3-70b-versatile`.
+`HF_MODEL_ID` is optional. If omitted, the app defaults to `meta-llama/Llama-3.2-1B-Instruct`.
 
 3. Start the app:
 
@@ -107,9 +112,31 @@ streamlit run app.py
 
 ## Environment Notes
 
-- `GROQ_API_KEY` is required. The current implementation raises an error if it is missing.
+- `HF_TOKEN` is required. The current implementation raises an error if it is missing.
 - `TAVILY_API_KEY` is optional for app startup, but research quality degrades without it. If missing, the researcher receives a placeholder message instead of live search results.
-- The current code uses Groq only. It does not currently instantiate OpenAI models.
+- The current code uses Hugging Face Inference Providers for chat completions.
+- `MONGO_URI` enables persistent semantic memory. Previous queries are embedded with `HF_EMBEDDING_MODEL`, stored in MongoDB, retrieved by vector similarity, and fed into the planner as related context.
+
+## MongoDB Vector Search
+
+For fastest retrieval, create a MongoDB Atlas Vector Search index on the `chat_memories` collection:
+
+```json
+{
+  "fields": [
+    {
+      "type": "vector",
+      "path": "embedding",
+      "numDimensions": 384,
+      "similarity": "cosine"
+    }
+  ]
+}
+```
+
+Name the index `chat_query_vector_index`, or update `MONGO_VECTOR_INDEX` to match your index name.
+
+If the vector index is not available yet, the app falls back to local cosine ranking over recent stored memories.
 
 ## Example Topics
 
