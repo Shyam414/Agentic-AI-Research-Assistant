@@ -7,3 +7,4 @@ python-dotenv
 tavily-python
 pymongo[srv]
 certifi
+redis

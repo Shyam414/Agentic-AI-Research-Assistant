@@ -89,6 +89,9 @@ MONGO_URI=your_mongodb_atlas_uri
 MONGO_DB_NAME=agentic_research
 MONGO_MEMORY_COLLECTION=chat_memories
 MONGO_VECTOR_INDEX=chat_query_vector_index
+REDIS_URL=redis://localhost:6379/0
+REDIS_EMBEDDING_TTL_SECONDS=2592000
+REDIS_RETRIEVAL_TTL_SECONDS=600
 ```
 
 `HF_MODEL_ID` is optional. If omitted, the app defaults to `meta-llama/Llama-3.2-1B-Instruct`.
@@ -116,6 +119,7 @@ streamlit run app.py
 - `TAVILY_API_KEY` is optional for app startup, but research quality degrades without it. If missing, the researcher receives a placeholder message instead of live search results.
 - The current code uses Hugging Face Inference Providers for chat completions.
 - `MONGO_URI` enables persistent semantic memory. Previous queries are embedded with `HF_EMBEDDING_MODEL`, stored in MongoDB, retrieved by vector similarity, and fed into the planner as related context.
+- `REDIS_URL` enables optional caching. Embeddings and exact-query retrieval results are cached in Redis; if Redis is unavailable, the app falls back to Hugging Face and MongoDB.
 
 ## MongoDB Vector Search
 
@@ -137,6 +141,20 @@ For fastest retrieval, create a MongoDB Atlas Vector Search index on the `chat_m
 Name the index `chat_query_vector_index`, or update `MONGO_VECTOR_INDEX` to match your index name.
 
 If the vector index is not available yet, the app falls back to local cosine ranking over recent stored memories.
+
+## Redis Cache
+
+Redis is used only as a speed layer:
+
+- Embedding cache keys avoid repeated Hugging Face embedding calls for the same text.
+- Retrieval cache keys avoid repeated MongoDB vector searches for the same query.
+- Retrieval cache is cleared after storing a new chat memory, so newly saved queries can be retrieved immediately.
+
+For local development, start Redis on `localhost:6379` and keep:
+
+```env
+REDIS_URL=redis://localhost:6379/0
+```
 
 ## Example Topics
 
