@@ -1,10 +1,10 @@
 langchain
 langgraph
 langchain-community
-huggingface_hub
 streamlit
 python-dotenv
 tavily-python
 pymongo[srv]
 certifi
 redis
+groq

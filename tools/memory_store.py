@@ -7,14 +7,14 @@ from math import sqrt
 import certifi
 import redis
 from dotenv import load_dotenv
-from huggingface_hub import InferenceClient
+from groq import Groq
 from pymongo import MongoClient
 from pymongo.errors import OperationFailure
 from redis.exceptions import RedisError
 
 load_dotenv()
 
-DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_EMBEDDING_MODEL = "nomic-embed-text-v1.5"
 DEFAULT_EMBEDDING_CACHE_TTL = 60 * 60 * 24 * 30
 DEFAULT_RETRIEVAL_CACHE_TTL = 60 * 10
 
@@ -107,22 +107,23 @@ def _normalize_embedding(raw_embedding):
 
 
 def embed_text(text):
-    embedding_model = os.getenv("HF_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL)
+    embedding_model = os.getenv("GROQ_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL)
     cache_key = _cache_key("embedding", embedding_model, text)
     cached_embedding = _cache_get_json(cache_key)
     if cached_embedding:
         return cached_embedding
 
-    token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
-    if not token:
-        raise ValueError("HF_TOKEN not found in .env")
+    api_key = os.getenv("GROQ_TOKEN") or os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_TOKEN or GROQ_API_KEY not found in .env")
 
-    client = InferenceClient(token=token)
-    raw_embedding = client.feature_extraction(
-        text,
+    client = Groq(api_key=api_key)
+    response = client.embeddings.create(
+        input=text,
         model=embedding_model,
+        encoding_format="float",
     )
-    embedding = _normalize_embedding(raw_embedding)
+    embedding = _normalize_embedding(response.data[0].embedding)
     _cache_set_json(
         cache_key,
         embedding,
@@ -153,7 +154,7 @@ def _format_memory_results(results):
 def retrieve_related_queries(query, limit=5):
     cache_key = _cache_key(
         "retrieval",
-        os.getenv("HF_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL),
+        os.getenv("GROQ_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL),
         os.getenv("MONGO_DB_NAME", "agentic_research"),
         os.getenv("MONGO_MEMORY_COLLECTION", "chat_memories"),
         query,
@@ -231,7 +232,7 @@ def store_chat_memory(query, summary, report=""):
                 "summary": summary,
                 "report": report,
                 "embedding": embedding,
-                "embedding_model": os.getenv("HF_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL),
+                "embedding_model": os.getenv("GROQ_EMBEDDING_MODEL", DEFAULT_EMBEDDING_MODEL),
                 "created_at": datetime.now(timezone.utc),
             }
         )

@@ -1,6 +1,6 @@
 # Agentic AI Research Assistant
 
-A Streamlit research app built with LangGraph, a Hugging Face-hosted language model, and Tavily web search. A user submits a topic, the workflow creates a research plan, gathers web context, summarizes the findings, and produces a final report in separate UI tabs.
+A Streamlit research app built with LangGraph, Groq-hosted language models (GROQ_TOKEN / GROQ_MODEL_ID), and Tavily web search. A user submits a topic, the workflow creates a research plan, gathers web context, summarizes the findings, and produces a final report in separate UI tabs.
 
 ## What It Does
 
@@ -41,7 +41,7 @@ LangGraph is compiled with an in-memory checkpointer, and the Streamlit app pass
 - Streamlit
 - LangGraph
 - LangChain
-- `huggingface_hub`
+- `groq`
 - Tavily Search API
 - `python-dotenv`
 
@@ -67,7 +67,7 @@ LangGraph is compiled with an in-memory checkpointer, and the Streamlit app pass
 ## Requirements
 
 - Python 3.10+ recommended
-- A Hugging Face token with access to the selected model
+- A Groq API token with access to the selected model
 - A Tavily API key for live web research
 
 ## Setup
@@ -81,9 +81,9 @@ pip install -r requirements.txt
 2. Create or update `.env`:
 
 ```env
-HF_TOKEN=your_huggingface_token
-HF_MODEL_ID=meta-llama/Llama-3.2-1B-Instruct
-HF_EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+GROQ_TOKEN=your_groq_api_token
+GROQ_MODEL_ID=llama-3.1-8b-instant
+GROQ_EMBEDDING_MODEL=nomic-embed-text-v1.5
 TAVILY_API_KEY=your_tavily_api_key
 MONGO_URI=your_mongodb_atlas_uri
 MONGO_DB_NAME=agentic_research
@@ -94,7 +94,7 @@ REDIS_EMBEDDING_TTL_SECONDS=2592000
 REDIS_RETRIEVAL_TTL_SECONDS=600
 ```
 
-`HF_MODEL_ID` is optional. If omitted, the app defaults to `meta-llama/Llama-3.2-1B-Instruct`.
+`GROQ_MODEL_ID` is optional. If omitted, the app defaults to `llama-3.1-8b-instant`.
 
 3. Start the app:
 
@@ -115,11 +115,11 @@ streamlit run app.py
 
 ## Environment Notes
 
-- `HF_TOKEN` is required. The current implementation raises an error if it is missing.
+- `GROQ_TOKEN` (or `GROQ_API_KEY`) is required. The current implementation raises an error if it is missing.
 - `TAVILY_API_KEY` is optional for app startup, but research quality degrades without it. If missing, the researcher receives a placeholder message instead of live search results.
-- The current code uses Hugging Face Inference Providers for chat completions.
-- `MONGO_URI` enables persistent semantic memory. Previous queries are embedded with `HF_EMBEDDING_MODEL`, stored in MongoDB, retrieved by vector similarity, and fed into the planner as related context.
-- `REDIS_URL` enables optional caching. Embeddings and exact-query retrieval results are cached in Redis; if Redis is unavailable, the app falls back to Hugging Face and MongoDB.
+- The app uses Groq for chat completions and embeddings.
+- `MONGO_URI` enables persistent semantic memory. Previous queries are embedded with `GROQ_EMBEDDING_MODEL`, stored in MongoDB, retrieved by vector similarity, and fed into the planner as related context.
+- `REDIS_URL` enables optional caching. Embeddings and exact-query retrieval results are cached in Redis; if Redis is unavailable, the app falls back to Groq and MongoDB.
 
 ## MongoDB Vector Search
 
@@ -131,7 +131,7 @@ For fastest retrieval, create a MongoDB Atlas Vector Search index on the `chat_m
     {
       "type": "vector",
       "path": "embedding",
-      "numDimensions": 384,
+      "numDimensions": 768,
       "similarity": "cosine"
     }
   ]
@@ -146,7 +146,7 @@ If the vector index is not available yet, the app falls back to local cosine ran
 
 Redis is used only as a speed layer:
 
-- Embedding cache keys avoid repeated Hugging Face embedding calls for the same text.
+- Embedding cache keys avoid repeated Groq embedding calls for the same text.
 - Retrieval cache keys avoid repeated MongoDB vector searches for the same query.
 - Retrieval cache is cleared after storing a new chat memory, so newly saved queries can be retrieved immediately.
 
