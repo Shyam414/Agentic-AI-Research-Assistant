@@ -7,4 +7,4 @@ tavily-python
 pymongo[srv]
 certifi
 redis
-groq
+ollama

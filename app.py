@@ -59,7 +59,18 @@ if run:
     )
 
     with plan_tab:
-        st.markdown(result["plan"])
+        plan_labels = {
+            "research_areas": "Research areas",
+            "questions": "Key questions",
+            "technologies": "Relevant technologies and entities",
+            "search_queries": "Search queries",
+        }
+
+        for key, label in plan_labels.items():
+            items = result["plan"].get(key, [])
+            if items:
+                st.subheader(label)
+                st.markdown("\n".join(f"- {item}" for item in items))
 
     with research_tab:
         st.markdown(result["research"])
