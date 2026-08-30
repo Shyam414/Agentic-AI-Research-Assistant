@@ -318,10 +318,6 @@ def embed_text(text):
         raise
 
 class OllamaLLM:
-    """
-    Local LLM backed by Ollama.
-    """
-
     def __init__(
         self,
         temperature=0,

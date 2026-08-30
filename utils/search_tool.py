@@ -12,19 +12,13 @@ MAX_QUERY_LENGTH = 1000
 
 
 def _get_tavily_client():
-    """
-    Create and return a Tavily client.
-    """
-
     api_key = os.getenv("TAVILY_API_KEY")
-
     if not api_key or api_key == "your_tavily_key":
 
         raise RuntimeError(
             "TAVILY_API_KEY is missing. "
             "Add your Tavily API key to .env."
         )
-
     return TavilyClient(
         api_key=api_key
     )
@@ -196,11 +190,6 @@ def web_search(query,max_results=DEFAULT_MAX_RESULTS):
     return results
 
 def format_search_results(results):
-    """
-    Convert structured Tavily results into
-    text suitable for an LLM prompt.
-    """
-
     if not results:
 
         return "No search results found."

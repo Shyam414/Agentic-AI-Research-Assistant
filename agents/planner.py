@@ -7,7 +7,6 @@ llm = get_llm(temperature=0)
 
 
 def _parse_plan(raw_output, topic):
-    """Extract and normalize a plan from an LLM JSON response."""
     candidate = raw_output.strip()
 
     if candidate.startswith("```"):
