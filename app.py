@@ -1,64 +1,86 @@
 import uuid
-
 import streamlit as st
 from dotenv import load_dotenv
-
-from tools.memory_store import build_semantic_memory_context, store_chat_memory
+from tools.memory_store import (
+    build_semantic_memory_context,
+    store_chat_memory,
+)
 from workflow.graph import app
 
 load_dotenv()
 
-st.set_page_config(page_title="Agentic AI Research Assistant", layout="wide")
+st.set_page_config(
+    page_title="Agentic AI Research Assistant",
+    layout="wide",
+)
 
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = str(uuid.uuid4())
 
-if "history" not in st.session_state:
-    st.session_state.history = []
-
 st.title("Agentic AI Research Assistant")
-
 with st.sidebar:
-    st.header("Session Memory")
-    if st.session_state.history:
-        for item in st.session_state.history[-5:]:
-            st.caption(item)
-    else:
-        st.caption("No completed research yet.")
+    st.header("Session")
 
-    if st.button("Clear Memory"):
-        st.session_state.history = []
+    st.caption(f"Thread ID: {st.session_state.thread_id}")
+
+    if st.button("New Session"):
         st.session_state.thread_id = str(uuid.uuid4())
         st.rerun()
 
-query = st.text_input("Enter research topic", placeholder="Future of Agentic AI")
-
-run = st.button("Run Agents", type="primary", disabled=not query.strip())
+query = st.text_input("Enter research topic",placeholder="Future of Agentic AI",)
+run = st.button("Run Agents",type="primary",disabled=not query.strip(),)
 
 if run:
-    recent_memory = "\n".join(st.session_state.history[-5:])
-    semantic_memory = build_semantic_memory_context(query.strip())
-    memory = "\n\n".join(item for item in [recent_memory, semantic_memory] if item)
-    config = {"configurable": {"thread_id": st.session_state.thread_id}}
+    current_query = query.strip()
+    try:
+        semantic_memory = build_semantic_memory_context(current_query)
+    except Exception as error:
+        semantic_memory = ""
+        st.warning(
+            f"Could not retrieve semantic memory: {error}"
+        )
+
+
+    memory = semantic_memory.strip() if semantic_memory else ""
+    config = {
+        "configurable": {
+            "thread_id": st.session_state.thread_id
+        }
+    }
 
     with st.spinner("Agents working..."):
-        result = app.invoke({"topic": query.strip(), "memory": memory}, config=config)
 
-    st.session_state.history.append(f"Topic: {query.strip()}\nSummary: {result['summary'][:500]}")
+        result = app.invoke(
+            {
+                "topic": current_query,
+                "memory": memory,
+            },
+            config=config,
+        )
+
     try:
         store_chat_memory(
-            query=query.strip(),
+            query=current_query,
             summary=result["summary"],
             report=result["report"],
         )
+
     except Exception as error:
-        st.warning(f"Could not save semantic memory: {error}")
+        st.warning(
+            f"Could not save semantic memory: {error}"
+        )
 
     plan_tab, research_tab, summary_tab, report_tab = st.tabs(
-        ["Research Plan", "Research Data", "Summary", "Final Report"]
+        [
+            "Research Plan",
+            "Research Data",
+            "Summary",
+            "Final Report",
+        ]
     )
 
     with plan_tab:
+
         plan_labels = {
             "research_areas": "Research areas",
             "questions": "Key questions",
@@ -67,10 +89,18 @@ if run:
         }
 
         for key, label in plan_labels.items():
+
             items = result["plan"].get(key, [])
+
             if items:
                 st.subheader(label)
-                st.markdown("\n".join(f"- {item}" for item in items))
+
+                st.markdown(
+                    "\n".join(
+                        f"- {item}"
+                        for item in items
+                    )
+                )
 
     with research_tab:
         st.markdown(result["research"])
