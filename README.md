@@ -21,7 +21,7 @@ The planner requests Ollama JSON mode and also handles common local-model variat
 - [Ollama](https://ollama.com/) running locally
 - A local chat model and embedding model (defaults shown below)
 - A Tavily API key for live research
-- Optional: MongoDB Atlas for persistent semantic memory and Redis for caching
+- Optional: MongoDB Atlas for persistent semantic memory
 
 Pull the default models before starting the app:
 
@@ -52,12 +52,6 @@ MONGO_URI=your_mongodb_atlas_uri
 MONGO_DB_NAME=agentic_research
 MONGO_MEMORY_COLLECTION=chat_memories
 MONGO_VECTOR_INDEX=chat_query_vector_index
-
-# Optional cache
-REDIS_URL=redis://localhost:6379/0
-REDIS_EMBEDDING_TTL_SECONDS=2592000
-REDIS_RETRIEVAL_TTL_SECONDS=600
-```
 
 3. Start the app:
 
