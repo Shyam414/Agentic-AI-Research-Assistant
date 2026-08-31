@@ -114,8 +114,6 @@ Do not include explanations outside the JSON.
         raise
 
     logger.info(
-        "Planner completed | search_queries=%d",
-        len(plan["search_queries"])
-    )
-
+        "Planner completed | search_queries=%d",len(plan["search_queries"]))
+    
     return plan

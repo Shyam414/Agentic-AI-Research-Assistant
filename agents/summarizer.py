@@ -11,10 +11,7 @@ def summarizer_agent(research_data):
             "Research data cannot be None."
         )
 
-    research_data = str(
-        research_data
-    ).strip()
-
+    research_data = str(research_data).strip()
     if not research_data:
         raise ValueError(
             "Research data cannot be empty."

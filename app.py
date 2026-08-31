@@ -36,10 +36,7 @@ if run:
         semantic_memory = build_semantic_memory_context(current_query)
     except Exception as error:
         semantic_memory = ""
-        st.warning(
-            f"Could not retrieve semantic memory: {error}"
-        )
-
+        st.warning(f"Could not retrieve semantic memory: {error}")
 
     memory = semantic_memory.strip() if semantic_memory else ""
     config = {
@@ -66,9 +63,7 @@ if run:
         )
 
     except Exception as error:
-        st.warning(
-            f"Could not save semantic memory: {error}"
-        )
+        st.warning(f"Could not save semantic memory: {error}")
 
     plan_tab, research_tab, summary_tab, report_tab = st.tabs(
         [

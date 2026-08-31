@@ -11,7 +11,6 @@ def writer_agent(topic, summary):
         )
 
     topic = str(topic).strip()
-
     if not topic:
         raise ValueError(
             "Writer topic cannot be empty."
