@@ -1,14 +1,15 @@
 import logging
 import os
 
+
 from dotenv import load_dotenv
 from tavily import TavilyClient
 
 load_dotenv()
 logger = logging.getLogger(__name__)
 
-DEFAULT_MAX_RESULTS = 5
-MAX_ALLOWED_RESULTS = 10
+DEFAULT_MAX_RESULTS=5
+MAX_ALLOWED_RESULTS=10
 MAX_QUERY_LENGTH = 1000
 
 
