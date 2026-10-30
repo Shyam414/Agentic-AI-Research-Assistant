@@ -90,6 +90,6 @@ Return only valid JSON.
     if not feedback:
         raise RuntimeError("Evaluator returned empty feedback.")
 
-    logger.info("Evaluator completed | output_length=%d", len(result))
+    logger.info("Evaluator completed | output_length=%d | score=%d", len(result),score)
 
     return {"score": score, "feedback": feedback}
